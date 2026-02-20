@@ -1,0 +1,5 @@
+{
+  "name": "ELLE.fr - Styliste Virtuel",
+  "description": "POC d'application mobile-first générant des tenues personnalisées basées sur un profil utilisateur et un catalogue produit, avec rendu photoréaliste via IA.",
+  "requestFramePermissions": []
+}
