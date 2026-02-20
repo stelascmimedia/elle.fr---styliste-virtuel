@@ -1,5 +1,6 @@
 import { Product } from '../types';
 import { normalizeSimplifiedTdItem } from './normalizers';
+import { CATALOG } from './catalog';
 
 export interface CatalogProduct extends Product {
   availability?: string;
@@ -80,6 +81,12 @@ export class CatalogService {
     if (fallback.length > 0) {
       console.log(`[CATALOG] Loaded ${fallback.length} products from ${DEFAULT_CATALOG_FILE}`);
       return fallback;
+    }
+
+    const emergencyCatalog = this.getEmergencyCatalog();
+    if (emergencyCatalog.length > 0) {
+      console.warn('[CATALOG] Falling back to embedded emergency catalog');
+      return emergencyCatalog;
     }
 
     throw new Error('Aucun produit catalogue exploitable');
@@ -180,5 +187,13 @@ export class CatalogService {
       }
     }
     return [...map.values()];
+  }
+
+  private static getEmergencyCatalog(): CatalogProduct[] {
+    return CATALOG.map((item) => ({
+      ...item,
+      availability: 'in stock',
+      description: item.title,
+    }));
   }
 }
