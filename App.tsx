@@ -131,9 +131,9 @@ const App: React.FC = () => {
              </div>
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-bold">CrÃ©ation de votre look...</h3>
+            <h3 className="text-xl font-bold">Création de votre look...</h3>
             <p className="text-sm text-gray-500 max-w-[240px]">
-              GÃ©nÃ©ration du rendu photorÃ©aliste en cours. Cela peut prendre quelques secondes.
+              Génération du rendu photoréaliste en cours. Cela peut prendre quelques secondes.
             </p>
           </div>
           <div className="bg-gray-50 p-4 rounded-xl text-[11px] text-gray-400 uppercase tracking-widest space-y-1">

@@ -8,6 +8,9 @@ interface Props {
 }
 
 export const ResultView: React.FC<Props> = ({ look, onRegenerate, onEdit }) => {
+  const formatPrice = (value: number) =>
+    value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
   const allLooks = useMemo<LookVariant[]>(
     () => [{ imageUrl: look.imageUrl, outfit: look.outfit, totalPrice: look.totalPrice }, ...(look.alternatives || [])],
     [look],
@@ -33,7 +36,7 @@ export const ResultView: React.FC<Props> = ({ look, onRegenerate, onEdit }) => {
           <div className="flex justify-between items-end">
             <div>
               <p className="text-white/70 text-xs font-bold uppercase tracking-widest mb-1">Total du look</p>
-              <h3 className="text-white text-3xl font-bold">{activeLook.totalPrice} EUR</h3>
+              <h3 className="text-white text-3xl font-bold">{formatPrice(activeLook.totalPrice)} EUR</h3>
             </div>
             <button
               onClick={onRegenerate}
@@ -83,7 +86,7 @@ export const ResultView: React.FC<Props> = ({ look, onRegenerate, onEdit }) => {
                   <h5 className="text-sm font-semibold line-clamp-2 leading-tight">{product.title}</h5>
                 </div>
                 <div className="flex justify-between items-end">
-                  <span className="font-bold text-lg">{product.price} EUR</span>
+                  <span className="font-bold text-lg">{formatPrice(product.price)} EUR</span>
                   <a
                     href={product.affiliateUrl}
                     target="_blank"
