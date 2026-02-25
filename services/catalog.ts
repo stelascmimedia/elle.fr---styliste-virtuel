@@ -1,11 +1,9 @@
-
 import { Product } from '../types';
 
 export const CATALOG: Product[] = [
-  // Femme - Smart Chic - Froid
   {
     id: 'f1',
-    title: 'Manteau en laine structuré',
+    title: 'Manteau en laine structure',
     brand: 'Maje',
     image: 'https://picsum.photos/seed/manteau1/400/600',
     affiliateUrl: 'https://elle.fr/shopping/manteau-maje',
@@ -13,13 +11,13 @@ export const CATALOG: Product[] = [
     currency: 'EUR',
     category: 'Woman > Coat',
     slot: 'outerwear',
-    styleTags: ['smart chic', 'business'],
+    styleTags: ['chic', 'minimal'],
     colorHex: '#333333',
-    weatherTags: ['froid', 'pluvieux']
+    weatherTags: ['froid', 'tempere'],
   },
   {
     id: 'f2',
-    title: 'Pull Cachemire Col Roulé',
+    title: 'Pull cachemire col roule',
     brand: 'Sandro',
     image: 'https://picsum.photos/seed/pull1/400/600',
     affiliateUrl: 'https://elle.fr/shopping/pull-sandro',
@@ -27,13 +25,13 @@ export const CATALOG: Product[] = [
     currency: 'EUR',
     category: 'Woman > Knitwear',
     slot: 'top',
-    styleTags: ['smart chic', 'décontracté'],
+    styleTags: ['chic', 'casual'],
     colorHex: '#F5F5DC',
-    weatherTags: ['froid', 'normal']
+    weatherTags: ['froid', 'tempere'],
   },
   {
     id: 'f3',
-    title: 'Pantalon Large Taille Haute',
+    title: 'Pantalon large taille haute',
     brand: 'Claudie Pierlot',
     image: 'https://picsum.photos/seed/pantalon1/400/600',
     affiliateUrl: 'https://elle.fr/shopping/pantalon-cp',
@@ -41,9 +39,9 @@ export const CATALOG: Product[] = [
     currency: 'EUR',
     category: 'Woman > Trousers',
     slot: 'bottom',
-    styleTags: ['business', 'smart chic'],
+    styleTags: ['chic', 'minimal'],
     colorHex: '#000000',
-    weatherTags: ['froid', 'normal', 'pluvieux', 'chaud']
+    weatherTags: ['froid', 'tempere', 'chaud'],
   },
   {
     id: 'f4',
@@ -55,14 +53,13 @@ export const CATALOG: Product[] = [
     currency: 'EUR',
     category: 'Woman > Shoes',
     slot: 'shoes',
-    styleTags: ['smart chic', 'business', 'habillé'],
+    styleTags: ['chic', 'rock'],
     colorHex: '#000000',
-    weatherTags: ['froid', 'normal', 'pluvieux']
+    weatherTags: ['froid', 'tempere'],
   },
-  // Décontracté - Chaud
   {
     id: 'f5',
-    title: 'Robe d\'été à fleurs',
+    title: "Robe d'ete a fleurs",
     brand: 'Ba&sh',
     image: 'https://picsum.photos/seed/robe1/400/600',
     affiliateUrl: 'https://elle.fr/shopping/robe-bash',
@@ -70,13 +67,13 @@ export const CATALOG: Product[] = [
     currency: 'EUR',
     category: 'Woman > Dress',
     slot: 'top',
-    styleTags: ['décontracté'],
+    styleTags: ['boheme', 'casual'],
     colorHex: '#FFB6C1',
-    weatherTags: ['chaud']
+    weatherTags: ['chaud'],
   },
   {
     id: 'f6',
-    title: 'Sandales en cuir doré',
+    title: 'Sandales en cuir dore',
     brand: 'K.Jacques',
     image: 'https://picsum.photos/seed/sandales1/400/600',
     affiliateUrl: 'https://elle.fr/shopping/sandales-kj',
@@ -84,23 +81,8 @@ export const CATALOG: Product[] = [
     currency: 'EUR',
     category: 'Woman > Shoes',
     slot: 'shoes',
-    styleTags: ['décontracté', 'habillé'],
+    styleTags: ['boheme', 'casual'],
     colorHex: '#FFD700',
-    weatherTags: ['chaud']
+    weatherTags: ['chaud'],
   },
-  // Homme
-  {
-    id: 'h1',
-    title: 'Blazer en flanelle',
-    brand: 'De Fursac',
-    image: 'https://picsum.photos/seed/blazer-h/400/600',
-    affiliateUrl: 'https://elle.fr/shopping/blazer-fursac',
-    price: 495,
-    currency: 'EUR',
-    category: 'Man > Blazer',
-    slot: 'top',
-    styleTags: ['business', 'smart chic'],
-    colorHex: '#2F4F4F',
-    weatherTags: ['normal', 'froid']
-  }
 ];

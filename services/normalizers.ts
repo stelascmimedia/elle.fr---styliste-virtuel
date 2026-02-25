@@ -31,18 +31,44 @@ function parsePrice(value: unknown): number {
   return 0;
 }
 
-function categoryToSlot(category: string): Slot {
-  const text = category.toLowerCase();
+function categoryToSlot(category: string, title: string, description: string): Slot {
+  const text = `${category} ${title} ${description}`.toLowerCase();
 
-  if (/(coat|manteau|jacket|trench|blazer)/i.test(text)) return 'outerwear';
-  if (/(pullover|sweater|cardigan|t-shirt|shirt|top|blouse)/i.test(text)) return 'top';
-  if (/(trousers|pants|denim trousers|jean|jeans|skirt|short|bermuda)/i.test(text)) return 'bottom';
-  if (/(shoes|sneakers|boot|ballerinas|ballerine|heels|loafers|mocassins)/i.test(text)) return 'shoes';
+  if (
+    /(coat|manteau|abrigo|jacket|chaqueta|veste|trench|blazer|anorak|parka|gabardina|impermeable|doudoune|plumifero)/i.test(
+      text,
+    )
+  ) {
+    return 'outerwear';
+  }
+  if (
+    /(pullover|sweater|jersey|cardigan|t-shirt|camiseta|shirt|chemise|top|blouse|blusa|sudadera|hoodie|sweat|camisa|polo|tank|debardeur|tricot|maille|knitwear)/i.test(
+      text,
+    )
+  ) {
+    return 'top';
+  }
+  if (
+    /(trousers|pants|pantalon|pantalones|denim trousers|jean|jeans|skirt|jupe|falda|short|bermuda|leggings|jogger|cargo|chino)/i.test(
+      text,
+    )
+  ) {
+    return 'bottom';
+  }
+  if (
+    /(shoes|shoe|sneakers|sneaker|trainers|trainer|footwear|sandals|sandal|boots|boot|ballerinas|ballerine|heels|heel|pumps|escarpins|loafers|mocassins|mocassin|baskets|chaussures|chaussure|calzado|zapato|zapatos|zapatilla|zapatillas|sandalia|sandalias|botin|botines|tacon|tacones|deportiva|deportivas|chancla|chanclas|slippers|mules)/i.test(
+      text,
+    )
+  ) {
+    return 'shoes';
+  }
+  if (/(dress|robe|vestido|mono|combinaison|jumpsuit)/i.test(text)) return 'top';
   return 'top';
 }
 
 export function normalizeSimplifiedTdItem(item: SimplifiedTdItem): Product {
   const title = item.title || item.name || 'Produit sans titre';
+  const description = item.description || '';
   const brand = item.brand || 'Unknown';
   const category = item.category || '';
   const price = parsePrice(item.price);
@@ -58,9 +84,9 @@ export function normalizeSimplifiedTdItem(item: SimplifiedTdItem): Product {
     price: price > 0 ? price : 0,
     currency: item.currency || 'EUR',
     category: category || 'Unknown',
-    slot: categoryToSlot(category),
-    styleTags: ['décontracté'],
+    slot: categoryToSlot(category, title, description),
+    styleTags: ['casual'],
     colorHex: '#000000',
-    weatherTags: ['normal'],
+    weatherTags: ['tempere'],
   };
 }

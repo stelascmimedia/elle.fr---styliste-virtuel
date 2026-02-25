@@ -83,13 +83,12 @@ CONTRAINTES DURES:
 - 1 seul produit par slot obligatoire.
 - Le total doit etre <= budgetMax (tolerance incluse).
 - Exclure les produits enfant (category contient Girl/Boy ou title/description contient "Enfant").
-- Si sex=femme, privilegier les categories Woman.
-- Si sex=homme, privilegier les categories Man.
+- Le profil est femme par defaut: privilegier les categories Woman et eviter les categories Man.
 - Ne jamais inventer d'id, de slot, de produit, de prix.
 
 OBJECTIFS SOFT:
-- Respect du style, meteo, audace, preference couleur, coherence globale.
-- Eviter 2 motifs forts quand audace=faible.
+- Respect du style, de l'usage, de la meteo (temperature + pluie) et de la coupe souhaitee.
+- Favoriser des looks coherents et portables pour le contexte demande.
 - ${variation || 'Version neutre.'}
 
 PROFILE:
@@ -116,6 +115,7 @@ RETOUR STRICT JSON (aucun texte autour):
 `;
 
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  console.log(`[COST] ranker.call model=gemini-2.0-flash keyAlias=${process.env.GEMINI_KEY_ALIAS || 'unknown'}`);
   const response = await ai.models.generateContent({
     model: 'gemini-2.0-flash',
     contents: prompt,

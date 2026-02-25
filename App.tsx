@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { Questionnaire } from './components/Questionnaire';
@@ -39,8 +39,8 @@ const App: React.FC = () => {
         // Proceeding directly after triggering openSelectKey to avoid race condition as per guidelines.
         setView('form');
       }
-    } catch (err) {
-      console.error("Failed to open key selector", err);
+    } catch (_err) {
+      // no-op
     }
   };
 
@@ -54,13 +54,16 @@ const App: React.FC = () => {
       setLook(result);
       setView('result');
     } catch (err: any) {
-      console.error(err);
       // Handle key issues by redirecting to auth view for re-selection.
       if (err.message?.includes("PERMISSION_DENIED") || err.message?.includes("Requested entity was not found")) {
-        setError("Accès refusé. Veuillez sélectionner une clé API valide issue d'un projet avec facturation activée.");
+        setError("AccÃ¨s refusÃ©. Veuillez sÃ©lectionner une clÃ© API valide issue d'un projet avec facturation activÃ©e.");
         setView('auth');
+      } else if (err.message?.includes('Catalogue TradeDoubler indisponible')) {
+        setError(`Source catalogue indisponible. ${err.message}`);
+        setView('form');
       } else {
-        setError("Désolé, une erreur est survenue lors de la génération de votre look. Veuillez réessayer.");
+        const detail = err?.message ? ` Detail: ${err.message}` : '';
+        setError(`Desole, une erreur est survenue lors de la generation de votre look. Veuillez reessayer.${detail}`);
         setView('form');
       }
     }
@@ -81,7 +84,7 @@ const App: React.FC = () => {
           <div className="space-y-4">
             <h2 className="text-3xl font-bold">Bienvenue</h2>
             <p className="text-gray-500 text-sm leading-relaxed">
-              Pour accéder au Styliste Virtuel haute fidélité, une clé API Google AI Studio (projet avec facturation) est requise.
+              Pour accÃ©der au Styliste Virtuel haute fidÃ©litÃ©, une clÃ© API Google AI Studio (projet avec facturation) est requise.
             </p>
             <a 
               href="https://ai.google.dev/gemini-api/docs/billing" 
@@ -103,7 +106,7 @@ const App: React.FC = () => {
             onClick={handleAuth}
             className="w-full py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-all uppercase tracking-widest text-xs"
           >
-            Sélectionner ma clé API
+            SÃ©lectionner ma clÃ© API
           </button>
         </div>
       )}
@@ -128,9 +131,9 @@ const App: React.FC = () => {
              </div>
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-bold">Création de votre look...</h3>
+            <h3 className="text-xl font-bold">CrÃ©ation de votre look...</h3>
             <p className="text-sm text-gray-500 max-w-[240px]">
-              Génération du rendu photoréaliste en cours. Cela peut prendre quelques secondes.
+              GÃ©nÃ©ration du rendu photorÃ©aliste en cours. Cela peut prendre quelques secondes.
             </p>
           </div>
           <div className="bg-gray-50 p-4 rounded-xl text-[11px] text-gray-400 uppercase tracking-widest space-y-1">
@@ -153,3 +156,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

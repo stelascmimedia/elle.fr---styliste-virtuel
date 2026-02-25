@@ -1,19 +1,19 @@
-
-export type Gender = 'homme' | 'femme';
-export type Style = 'décontracté' | 'smart chic' | 'business' | 'habillé';
-export type Weather = 'froid' | 'normal' | 'pluvieux' | 'chaud';
-export type Audacity = 'faible' | 'moyen' | 'élevé';
-export type Fit = 'ajustée' | 'ample';
+export type Gender = 'femme';
+export type Usage = 'quotidien' | 'travail' | 'soiree' | 'week-end';
+export type Style = 'minimal' | 'chic' | 'sporty' | 'boheme' | 'casual' | 'rock';
+export type Temperature = 'froid' | 'tempere' | 'chaud';
+export type Rain = 'oui' | 'non';
+export type Fit = 'ajuste' | 'droit' | 'oversize';
 export type Slot = 'outerwear' | 'top' | 'bottom' | 'shoes' | 'accessory';
 
 export interface UserProfile {
   sex: Gender;
   age: number;
+  usage: Usage;
   style: Style;
-  season_meteo: Weather;
+  temperature: Temperature;
+  rain: Rain;
   budget: number;
-  audace: Audacity;
-  colorPreference: string;
   fitPreference: Fit;
 }
 
@@ -29,7 +29,7 @@ export interface Product {
   slot: Slot;
   styleTags: Style[];
   colorHex: string;
-  weatherTags: Weather[];
+  weatherTags: Temperature[];
 }
 
 export interface LookVariant {

@@ -1,4 +1,4 @@
-﻿import { Product, Slot, Weather } from '../types';
+import { Product, Slot, Temperature } from '../types';
 import { CATALOG } from './catalog';
 
 interface SourceField {
@@ -41,7 +41,7 @@ interface SourceCatalog {
 }
 
 const MOCK_CATALOG_URL = '/catalogue/catalogue.json';
-const DEFAULT_WEATHER: Weather[] = ['froid', 'normal', 'pluvieux', 'chaud'];
+const DEFAULT_WEATHER: Temperature[] = ['froid', 'tempere', 'chaud'];
 
 export class MockCatalogService {
   static async fetchProducts(): Promise<Product[]> {
@@ -67,7 +67,6 @@ export class MockCatalogService {
       await new Promise((resolve) => setTimeout(resolve, 250));
       return mapped;
     } catch (error) {
-      console.warn('Mock catalog fetch failed, fallback to local catalog.ts', error);
       return CATALOG;
     }
   }
@@ -77,11 +76,7 @@ export class MockCatalogService {
     const category = source.categories?.[0]?.name || 'Unknown';
     const name = source.name || `Produit ${index + 1}`;
 
-    const price =
-      this.getPriceFromField(fields) ??
-      this.getPriceFromOffer(source.offers?.[0]) ??
-      0;
-
+    const price = this.getPriceFromField(fields) ?? this.getPriceFromOffer(source.offers?.[0]) ?? 0;
     if (price <= 0) {
       return null;
     }
@@ -126,20 +121,15 @@ export class MockCatalogService {
   }
 
   private static getPriceFromOffer(offer?: SourceOffer): number | null {
-    const lastPrice = offer?.priceHistory?.[offer.priceHistory.length - 1]?.price?.value;
+    const history = offer?.priceHistory;
+    const lastPrice = history?.[history.length - 1]?.price?.value;
     return this.parsePrice(lastPrice);
   }
 
   private static parsePrice(value?: string): number | null {
-    if (!value) {
-      return null;
-    }
-
+    if (!value) return null;
     const normalized = value.replace(',', '.').trim();
-    if (!normalized) {
-      return null;
-    }
-
+    if (!normalized) return null;
     const parsed = Number(normalized);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
   }
@@ -147,56 +137,33 @@ export class MockCatalogService {
   private static detectSlot(category: string, name: string): Slot {
     const text = `${category} ${name}`.toLowerCase();
 
-    if (text.includes('shoe') || text.includes('sandale') || text.includes('bottine') || text.includes('boot')) {
-      return 'shoes';
-    }
-    if (text.includes('coat') || text.includes('manteau') || text.includes('veste') || text.includes('blazer')) {
-      return 'outerwear';
-    }
-    if (text.includes('trouser') || text.includes('pantalon') || text.includes('jean') || text.includes('jupe') || text.includes('short')) {
-      return 'bottom';
-    }
-
+    if (text.includes('shoe') || text.includes('sandale') || text.includes('bottine') || text.includes('boot')) return 'shoes';
+    if (text.includes('coat') || text.includes('manteau') || text.includes('veste') || text.includes('blazer')) return 'outerwear';
+    if (text.includes('trouser') || text.includes('pantalon') || text.includes('jean') || text.includes('jupe') || text.includes('short')) return 'bottom';
     return 'top';
   }
 
   private static detectStyleTags(category: string, name: string): Product['styleTags'] {
     const text = `${category} ${name}`.toLowerCase();
 
-    if (text.includes('blazer') || text.includes('tailor') || text.includes('tailleur')) {
-      return ['business', 'smart chic'];
-    }
-    if (text.includes('robe') || text.includes('dress')) {
-      return ['smart chic'];
-    }
-
-    return ['smart chic', 'business'];
+    if (text.includes('blazer') || text.includes('tailor') || text.includes('tailleur')) return ['chic', 'minimal'];
+    if (text.includes('robe') || text.includes('dress')) return ['boheme', 'chic'];
+    if (text.includes('sneaker') || text.includes('jogger')) return ['sporty', 'casual'];
+    return ['casual', 'minimal'];
   }
 
-  private static detectWeatherTags(slot: Slot, name: string, category: string): Weather[] {
+  private static detectWeatherTags(slot: Slot, name: string, category: string): Temperature[] {
     const text = `${name} ${category}`.toLowerCase();
 
-    if (slot === 'outerwear') {
-      return ['froid', 'normal', 'pluvieux'];
-    }
-    if (slot === 'shoes') {
-      return ['froid', 'normal', 'pluvieux', 'chaud'];
-    }
-
-    if (text.includes('t-shirt') || text.includes('debardeur') || text.includes('sandale') || text.includes('short')) {
-      return ['chaud', 'normal'];
-    }
-    if (text.includes('pull') || text.includes('laine') || text.includes('cachemire')) {
-      return ['froid', 'normal'];
-    }
-
+    if (slot === 'outerwear') return ['froid', 'tempere'];
+    if (slot === 'shoes') return ['froid', 'tempere', 'chaud'];
+    if (text.includes('t-shirt') || text.includes('debardeur') || text.includes('sandale') || text.includes('short')) return ['chaud', 'tempere'];
+    if (text.includes('pull') || text.includes('laine') || text.includes('cachemire')) return ['froid', 'tempere'];
     return DEFAULT_WEATHER;
   }
 
   private static mapColorToHex(colorValue?: string): string {
-    if (!colorValue) {
-      return '#000000';
-    }
+    if (!colorValue) return '#000000';
 
     const normalized = colorValue.toLowerCase();
     const colorMap: Record<string, string> = {
