@@ -7,6 +7,7 @@ import { UserProfile, GeneratedLook } from './types';
 import { BackendService } from './services/backend';
 
 // Removed local aistudio declaration to resolve conflict with pre-defined AIStudio global type.
+const LOADING_AD_VIDEO_SRC = '/ads/mock-loading-9x16.mp4';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'auth' | 'form' | 'loading' | 'result'>('auth');
@@ -123,23 +124,34 @@ const App: React.FC = () => {
       )}
 
       {view === 'loading' && (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 space-y-6 text-center animate-pulse">
-          <div className="relative">
-             <div className="w-24 h-24 border-4 border-gray-100 border-t-black rounded-full animate-spin"></div>
-             <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[10px] font-bold">AI</span>
-             </div>
+        <div className="w-full min-h-[78vh] flex flex-col justify-start bg-white">
+          <div className="relative w-full">
+            <div className="absolute top-3 left-3 z-20 bg-black/65 text-white text-[10px] tracking-wider uppercase px-2 py-1 rounded">
+              Publicite
+            </div>
+            <div className="relative w-full aspect-[9/16] overflow-hidden bg-black">
+              <video
+                className="w-full h-full object-cover"
+                src={LOADING_AD_VIDEO_SRC}
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <h3 className="text-xl font-bold">Création de votre look...</h3>
-            <p className="text-sm text-gray-500 max-w-[240px]">
-              Génération du rendu photoréaliste en cours. Cela peut prendre quelques secondes.
-            </p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-xl text-[11px] text-gray-400 uppercase tracking-widest space-y-1">
-             <p>Analyse de la silhouette...</p>
-             <p>Matching catalogue...</p>
-             <p>Appel Gemini 3 Pro Image...</p>
+
+          <div className="px-5 py-4 space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5">
+              <span className="w-2 h-2 rounded-full bg-black/80 animate-pulse"></span>
+              <span className="text-[10px] text-gray-700 uppercase tracking-[0.2em]">Chargement</span>
+            </div>
+
+            <div className="space-y-1.5 text-[11px] text-gray-500 uppercase tracking-[0.15em]">
+              <p>Analyse silhouette...</p>
+              <p>Matching catalogue...</p>
+              <p>Generation look final...</p>
+            </div>
           </div>
         </div>
       )}
