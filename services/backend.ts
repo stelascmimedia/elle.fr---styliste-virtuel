@@ -44,6 +44,7 @@ type FilterRejectionReason =
  */
 export class BackendService {
   private static readonly TOTAL_LOOKS_TO_GENERATE = 5;
+  private static readonly IMAGE_RENDER_CONCURRENCY = 2;
   private static nowMs(): number {
     return typeof performance !== 'undefined' ? performance.now() : Date.now();
   }
@@ -114,26 +115,36 @@ export class BackendService {
 
   private static async generateRenderedLooks(profile: UserProfile, outfits: Product[][]): Promise<LookVariant[]> {
     const tStart = this.nowMs();
-    const renderedLooks: LookVariant[] = [];
+    const renderedLooks = new Array<LookVariant | null>(outfits.length).fill(null);
+    let nextIndex = 0;
+    const workerCount = Math.max(1, Math.min(this.IMAGE_RENDER_CONCURRENCY, outfits.length));
 
-    for (let i = 0; i < outfits.length; i += 1) {
-      const outfit = outfits[i];
-      const tLookStart = this.nowMs();
-      const totalPrice = outfit.reduce((sum, item) => sum + item.price, 0);
-      try {
-        const imageUrl = await this.generateLookImage(profile, outfit);
-        renderedLooks.push({ imageUrl, outfit, totalPrice });
-        console.log(`[PERF] generateRenderedLooks.lookIndex=${i} status=ok ms=${(this.nowMs() - tLookStart).toFixed(1)}`);
-      } catch (error) {
-        console.error(`[ERR_IMAGE] lookIndex=${i} ${this.formatError(error)}`);
-        const fallbackImage = outfit[0]?.image || 'https://picsum.photos/seed/fallback-look/720/1280';
-        renderedLooks.push({ imageUrl: fallbackImage, outfit, totalPrice });
-        console.log(`[PERF] generateRenderedLooks.lookIndex=${i} status=fallback ms=${(this.nowMs() - tLookStart).toFixed(1)}`);
+    const worker = async () => {
+      while (true) {
+        const i = nextIndex;
+        nextIndex += 1;
+        if (i >= outfits.length) break;
+
+        const outfit = outfits[i];
+        const tLookStart = this.nowMs();
+        const totalPrice = outfit.reduce((sum, item) => sum + item.price, 0);
+        try {
+          const imageUrl = await this.generateLookImage(profile, outfit);
+          renderedLooks[i] = { imageUrl, outfit, totalPrice };
+          console.log(`[PERF] generateRenderedLooks.lookIndex=${i} status=ok ms=${(this.nowMs() - tLookStart).toFixed(1)}`);
+        } catch (error) {
+          console.error(`[ERR_IMAGE] lookIndex=${i} ${this.formatError(error)}`);
+          const fallbackImage = outfit[0]?.image || 'https://picsum.photos/seed/fallback-look/720/1280';
+          renderedLooks[i] = { imageUrl: fallbackImage, outfit, totalPrice };
+          console.log(`[PERF] generateRenderedLooks.lookIndex=${i} status=fallback ms=${(this.nowMs() - tLookStart).toFixed(1)}`);
+        }
       }
-    }
+    };
+
+    await Promise.all(Array.from({ length: workerCount }, () => worker()));
 
     console.log(`[PERF] generateRenderedLooks.totalMs=${(this.nowMs() - tStart).toFixed(1)}`);
-    return renderedLooks;
+    return renderedLooks.filter((item): item is LookVariant => item !== null);
   }
 
   private static async generateDiverseOutfits(profile: UserProfile, catalog: CatalogProduct[], count: number): Promise<Product[][]> {
