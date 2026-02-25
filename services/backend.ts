@@ -303,11 +303,11 @@ export class BackendService {
       const filtered: CatalogProduct[] = [];
       for (const product of catalog) {
         const result = this.evaluateHardFilter(product, profile, slot, maxPriceForSlot, options.excludedProductKeys);
-        if (result.ok) {
-          filtered.push(product);
-        } else {
+        if ('reason' in result) {
           rejectedByReason[result.reason] += 1;
+          continue;
         }
+        filtered.push(product);
       }
 
       const shortlisted = this.shortlistByPriceAndBrand(filtered, 40);

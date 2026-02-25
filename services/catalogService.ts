@@ -76,6 +76,21 @@ const SLOT_TO_Q_TERMS: Record<Slot, string[]> = {
   shoes: ['sandals', 'boots', 'sneakers', 'chaussures', 'baskets', 'shoes'],
   accessory: ['bag', 'belt', 'sac', 'ceinture'],
 };
+const STYLE_TO_Q_TERMS: Record<string, string[]> = {
+  minimal: ['minimal', 'minimalist', 'epure', 'clean'],
+  chic: ['chic', 'elegant', 'smart', 'tailored', 'raffine'],
+  sporty: ['sporty', 'sport', 'athleisure', 'active', 'decontracte'],
+  boheme: ['boheme', 'boho', 'romantic', 'flowy', 'folk'],
+  casual: ['casual', 'everyday', 'daily', 'relaxed', 'quotidien'],
+  rock: ['rock', 'edgy', 'biker', 'black', 'grunge'],
+};
+const USAGE_TO_Q_TERMS: Record<string, string[]> = {
+  quotidien: ['quotidien', 'daily', 'everyday', 'casual', 'lifestyle'],
+  travail: ['travail', 'work', 'office', 'smart', 'business'],
+  soiree: ['soiree', 'evening', 'party', 'night', 'dressy'],
+  'week-end': ['weekend', 'week-end', 'leisure', 'casual', 'relaxed'],
+};
+const MAX_QUERIES_PER_SLOT = 10;
 
 export class CatalogService {
   private static nowMs(): number {
@@ -346,32 +361,70 @@ export class CatalogService {
     const queries: URLSearchParams[] = [];
 
     for (const slot of slots) {
-      const fromBuilder = await this.fetchQueryBuilderSuggestions(slot, perSlotBudget, profile);
-      if (fromBuilder.length > 0) {
-        console.log(`[TD] Query builder slot=${slot} suggestions=${fromBuilder.length}`);
-        queries.push(...fromBuilder);
-        continue;
-      }
-
-      const qTerms = SLOT_TO_Q_TERMS[slot] || [];
-      // One lexical probe per term; avoid stacking many q/category keys which often yields 0 on this feed.
-      for (const term of qTerms) {
+      const slotQueries: URLSearchParams[] = [];
+      const slotSeen = new Set<string>();
+      const styleTerms = this.expandStyleTerms(profile.style);
+      const usageTerms = this.expandUsageTerms(profile.usage);
+      const slotTerms = this.uniqueNormalized(SLOT_TO_Q_TERMS[slot] || []);
+      const addSlotQuery = (terms: string[]) => {
+        const cleaned = this.uniqueNormalized(terms).slice(0, 4);
+        if (cleaned.length === 0) return;
         const params = new URLSearchParams();
-        params.append('q', term);
+        cleaned.forEach((term) => params.append('q', term));
         params.set('maxPrice', String(perSlotBudget));
         params.set('pageSize', '100');
         params.set('maxPages', '1');
-        queries.push(params);
+        const key = params.toString();
+        if (slotSeen.has(key)) return;
+        slotSeen.add(key);
+        slotQueries.push(params);
+      };
+
+      const fromBuilder = await this.fetchQueryBuilderSuggestions(slot, perSlotBudget, profile);
+      if (fromBuilder.length > 0) {
+        console.log(`[TD] Query builder slot=${slot} suggestions=${fromBuilder.length}`);
+      }
+      for (const query of fromBuilder) {
+        const key = query.toString();
+        if (slotSeen.has(key)) continue;
+        slotSeen.add(key);
+        slotQueries.push(query);
       }
 
-      // Extra broad probe by style/usage to diversify if lexical terms are sparse.
-      const broad = new URLSearchParams();
-      broad.append('q', profile.style);
-      broad.append('q', profile.usage);
-      broad.set('maxPrice', String(perSlotBudget));
-      broad.set('pageSize', '100');
-      broad.set('maxPages', '1');
-      queries.push(broad);
+      // Tier A: precise (slot + style + usage)
+      for (const slotTerm of slotTerms.slice(0, 3)) {
+        for (const styleTerm of styleTerms.slice(0, 2)) {
+          for (const usageTerm of usageTerms.slice(0, 2)) {
+            addSlotQuery([slotTerm, styleTerm, usageTerm]);
+            if (slotQueries.length >= MAX_QUERIES_PER_SLOT) break;
+          }
+          if (slotQueries.length >= MAX_QUERIES_PER_SLOT) break;
+        }
+        if (slotQueries.length >= MAX_QUERIES_PER_SLOT) break;
+      }
+
+      // Tier B: semi-broad (slot + style OR usage)
+      if (slotQueries.length < MAX_QUERIES_PER_SLOT) {
+        for (const slotTerm of slotTerms.slice(0, 4)) {
+          addSlotQuery([slotTerm, styleTerms[0]]);
+          if (slotQueries.length >= MAX_QUERIES_PER_SLOT) break;
+          addSlotQuery([slotTerm, usageTerms[0]]);
+          if (slotQueries.length >= MAX_QUERIES_PER_SLOT) break;
+        }
+      }
+
+      // Tier C: broad lexical probes by slot only
+      if (slotQueries.length < MAX_QUERIES_PER_SLOT) {
+        for (const term of slotTerms) {
+          addSlotQuery([term]);
+          if (slotQueries.length >= MAX_QUERIES_PER_SLOT) break;
+        }
+      }
+
+      console.log(
+        `[TD] queryPlan slot=${slot} styleTerms=${styleTerms.slice(0, 4).join('|')} usageTerms=${usageTerms.slice(0, 4).join('|')} generated=${slotQueries.length}`,
+      );
+      queries.push(...slotQueries.slice(0, MAX_QUERIES_PER_SLOT));
     }
 
     const deduped = new Map<string, URLSearchParams>();
@@ -380,6 +433,30 @@ export class CatalogService {
       if (!deduped.has(key)) deduped.set(key, query);
     }
     return [...deduped.values()];
+  }
+
+  private static uniqueNormalized(values: Array<string | undefined>): string[] {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const value of values) {
+      const normalized = (value || '').trim().toLowerCase();
+      if (!normalized || seen.has(normalized)) continue;
+      seen.add(normalized);
+      out.push(normalized);
+    }
+    return out;
+  }
+
+  private static expandStyleTerms(style: string | undefined): string[] {
+    const key = (style || '').trim().toLowerCase();
+    const base = STYLE_TO_Q_TERMS[key] || [];
+    return this.uniqueNormalized([key, ...base, 'femme', 'woman']);
+  }
+
+  private static expandUsageTerms(usage: string | undefined): string[] {
+    const key = (usage || '').trim().toLowerCase();
+    const base = USAGE_TO_Q_TERMS[key] || [];
+    return this.uniqueNormalized([key, ...base]);
   }
 
   private static getEmergencyCatalog(): CatalogProduct[] {
